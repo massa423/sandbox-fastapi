@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "sandbox-fastapi"
+version = "0.1.0"
+description = "sandbox fastapi"
+authors = ["Suzuki Masaya <vagrant@example.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+fastapi = "^0.61.2"
+SQLAlchemy = "^1.3.20"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.1.2"
+mypy = "^0.790"
+flake8 = "^3.8.4"
+yapf = "^0.30.0"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
