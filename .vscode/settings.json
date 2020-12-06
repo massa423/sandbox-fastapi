@@ -10,4 +10,7 @@
   "python.linting.mypyEnabled": true,
   "python.formatting.provider": "yapf",
   "python.formatting.yapfPath": ".venv/bin/yapf",
+  "python.autoComplete.extraPaths": [
+    "${workspaceFolder}/.venv/bin"
+  ]
 }
