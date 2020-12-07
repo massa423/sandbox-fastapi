@@ -8,9 +8,9 @@
   "python.linting.pylintEnabled": false,
   "python.linting.flake8Enabled": true,
   "python.linting.mypyEnabled": true,
-  "python.formatting.provider": "yapf",
-  "python.formatting.yapfPath": ".venv/bin/yapf",
+  "python.formatting.provider": "black",
+  "python.formatting.blackPath": ".venv/bin/black",
   "python.autoComplete.extraPaths": [
     "${workspaceFolder}/.venv/bin"
-  ]
+  ],
 }

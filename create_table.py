@@ -9,15 +9,13 @@ if __name__ == "__main__":
     if not os.path.isfile(path):
         Base.metadata.create_all(engine)
 
-    admin = User(username='admin',
-                 password='fastapi',
-                 mail='admin@example.com')
+    admin = User(username="admin", password="fastapi", mail="admin@example.com")
     session.add(admin)
     session.commit()
 
     task = Task(
         user_id=admin.id,
-        content='○○の締め切り',
+        content="○○の締め切り",
         deadline=datetime(2020, 12, 6, 12, 0, 0),
     )
     print(task)

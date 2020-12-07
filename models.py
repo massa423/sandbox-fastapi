@@ -21,14 +21,11 @@ class User(Base):
     mail: メールアドレス
     """
 
-    __tablename__ = 'user'
-    id = Column('id',
-                INTEGER(unsigned=True),
-                primary_key=True,
-                autoincrement=True)
-    username = Column('username', String(256))
-    password = Column('password', String(256))
-    mail = Column('mail', String(256))
+    __tablename__ = "user"
+    id = Column("id", INTEGER(unsigned=True), primary_key=True, autoincrement=True)
+    username = Column("username", String(256))
+    password = Column("password", String(256))
+    mail = Column("mail", String(256))
 
     def __init__(self, username: str, password: str, mail: str):
         self.username = username
@@ -36,7 +33,7 @@ class User(Base):
         self.mail = mail
 
     def __str__(self) -> str:
-        return str(self.id) + ':' + self.username
+        return str(self.id) + ":" + self.username
 
 
 class Task(Base):
@@ -51,36 +48,38 @@ class Task(Base):
     done: タスクを終了したか
     """
 
-    __tablename__ = 'task'
+    __tablename__ = "task"
     id = Column(
-        'id',
+        "id",
         INTEGER(unsigned=True),
         primary_key=True,
         autoincrement=True,
     )
 
-    user_id = Column('user_id', ForeignKey('user.id'))
-    content = Column('column', String(256))
+    user_id = Column("user_id", ForeignKey("user.id"))
+    content = Column("column", String(256))
     deadline = Column(
-        'deadline',
+        "deadline",
         DateTime,
         default=None,
         nullable=False,
     )
     date = Column(
-        'date',
+        "date",
         DateTime,
         default=datetime.now(),
         nullable=False,
         server_default=current_timestamp(),
     )
-    done = Column('done', BOOLEAN, default=False, nullable=False)
+    done = Column("done", BOOLEAN, default=False, nullable=False)
 
-    def __init__(self,
-                 user_id: int,
-                 content: str,
-                 deadline: datetime,
-                 date: datetime = datetime.now()):
+    def __init__(
+        self,
+        user_id: int,
+        content: str,
+        deadline: datetime,
+        date: datetime = datetime.now(),
+    ):
         self.user_id = user_id
         self.content = content
         self.deadline = deadline
@@ -88,9 +87,16 @@ class Task(Base):
         self.done = False
 
     def __str__(self) -> str:
-        return str(self.id) + \
-            ': user_id -> ' + str(self.user_id) + \
-            ', content -> ' + str(self.content) + \
-            ', deadline -> ' + self.deadline.strftime('%Y/%m/%d - %H%M%S') + \
-            ', date -> ' + self.date.strftime('%Y/%m/%d - %H%M%S') + \
-            ', done -> ' + str(self.done)
+        return (
+            str(self.id)
+            + ": user_id -> "
+            + str(self.user_id)
+            + ", content -> "
+            + str(self.content)
+            + ", deadline -> "
+            + self.deadline.strftime("%Y/%m/%d - %H%M%S")
+            + ", date -> "
+            + self.date.strftime("%Y/%m/%d - %H%M%S")
+            + ", done -> "
+            + str(self.done)
+        )
