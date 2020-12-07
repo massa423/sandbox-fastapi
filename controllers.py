@@ -9,8 +9,10 @@ import db
 from models import User, Task
 
 import hashlib
-
 import re
+
+from mycalendar import MyCalendar
+from datetime import datetime, timedelta
 
 pattern = re.compile(r'\w{4,20}')
 pattern_pw = re.compile(r'\w{6,20}')
@@ -54,11 +56,27 @@ def admin(
                             detail=error,
                             headers={"WWW-Authentication": "Basic"})
 
-    return templates.TemplateResponse('admin.html', {
-        'request': request,
-        'user': user,
-        'task': task,
-    })
+    today = datetime.now()
+    next_w = today + timedelta(days=7)
+
+    cal = MyCalendar(username,
+                     {t.deadline.strftime('%Y%m%d'): t.done
+                      for t in task})
+    c: str = cal.formatyear(today.year, 4)
+
+    task = [t for t in task if today <= t.deadline <= next_w]
+    links = [
+        t.deadline.strftime('/todo/' + username + '/%Y/%m/%d') for t in task
+    ]
+
+    return templates.TemplateResponse(
+        'admin.html', {
+            'request': request,
+            'user': user,
+            'task': task,
+            'links': links,
+            'calendar': c
+        })
 
 
 async def register(request: Request) -> _TemplateResponse:
