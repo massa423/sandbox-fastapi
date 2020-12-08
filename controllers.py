@@ -168,7 +168,7 @@ async def done(
     """
     username = auth(credentials)
 
-    user = db.session.query(User).filter(User.username == username).fisrt()
+    user = db.session.query(User).filter(User.username == username).first()
     task = db.session.query(Task).filter(Task.user_id == user.id).all()
 
     data = await request.form()
