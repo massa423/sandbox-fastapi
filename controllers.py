@@ -1,14 +1,17 @@
+from typing import Union
+
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
 from starlette.templating import Jinja2Templates, _TemplateResponse
 from starlette.requests import Request
-from starlette.status import HTTP_401_UNAUTHORIZED, HTTP_405_METHOD_NOT_ALLOWED
+from starlette.responses import RedirectResponse
+from starlette.status import HTTP_405_METHOD_NOT_ALLOWED
 
 import db
 from models import User, Task
+from auth import auth
 
-import hashlib
 import re
 
 from mycalendar import MyCalendar
@@ -43,8 +46,7 @@ def admin(
     """
     admin
     """
-    username = credentials.username
-    password = hashlib.sha256(credentials.password.encode()).hexdigest()
+    username = auth(credentials)
 
     user = db.session.query(User).filter(User.username == username).first()
     task = (
@@ -52,15 +54,6 @@ def admin(
         if user is not None
         else []
     )
-    db.session.close()
-
-    if user is None or user.password != password:
-        error = "ユーザ名かパスワードが間違ってます"
-        raise HTTPException(
-            status_code=HTTP_401_UNAUTHORIZED,
-            detail=error,
-            headers={"WWW-Authentication": "Basic"},
-        )
 
     today = datetime.now()
     next_w = today + timedelta(days=7)
@@ -129,3 +122,63 @@ async def register(request: Request) -> _TemplateResponse:
 
     msg = "許可されていません。"
     raise HTTPException(status_code=HTTP_405_METHOD_NOT_ALLOWED, detail=msg)
+
+
+def detail(
+    request: Request,
+    username: str,
+    year: str,
+    month: str,
+    day: str,
+    credentials: HTTPBasicCredentials = Depends(security),
+) -> Union[_TemplateResponse, RedirectResponse]:
+    """
+    detail
+    """
+    username_tmp = auth(credentials)
+
+    if username_tmp != username:
+        return RedirectResponse("/")
+
+    user = db.session.query(User).filter(User.username == username).first()
+    task = db.session.query(Task).filter(Task.user_id == user.id).all()
+    db.session.close()
+
+    theday = "{}{}{}".format(year, month.zfill(2), day.zfill(2))
+    task = [t for t in task if t.deadline.strftime("%Y%m%d") == theday]
+
+    return templates.TemplateResponse(
+        "detail.html",
+        {
+            "request": request,
+            "username": username,
+            "task": task,
+            "year": year,
+            "month": month,
+            "day": day,
+        },
+    )
+
+
+async def done(
+    request: Request, credentials: HTTPBasicCredentials = Depends(security)
+) -> RedirectResponse:
+    """
+    done
+    """
+    username = auth(credentials)
+
+    user = db.session.query(User).filter(User.username == username).fisrt()
+    task = db.session.query(Task).filter(Task.user_id == user.id).all()
+
+    data = await request.form()
+    t_dones = data.getlist("done[]")
+
+    for t in task:
+        if str(t.id) in t_dones:
+            t.done = True
+
+    db.session.commit()
+    db.session.close()
+
+    return RedirectResponse("/admin")
