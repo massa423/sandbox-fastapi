@@ -182,3 +182,51 @@ async def done(
     db.session.close()
 
     return RedirectResponse("/admin")
+
+
+async def add(
+    request: Request, credentials: HTTPBasicCredentials = Depends(security)
+) -> RedirectResponse:
+    """
+    add
+    """
+    username = auth(credentials)
+
+    user = db.session.query(User).filter(User.username == username).first()
+
+    data = await request.form()
+    year = int(data["year"])
+    month = int(data["month"])
+    day = int(data["day"])
+    hour = int(data["hour"])
+    minute = int(data["minute"])
+
+    deadline = datetime(year=year, month=month, day=day, hour=hour, minute=minute)
+
+    task = Task(user.id, data["content"], deadline)
+    db.session.add(task)
+    db.session.commit()
+    db.session.close()
+
+    return RedirectResponse("/admin")
+
+
+def delete(
+    request: Request, t_id: str, credentials: HTTPBasicCredentials = Depends(security)
+) -> RedirectResponse:
+    """
+    delete
+    """
+    username = auth(credentials)
+
+    user = db.session.query(User).filter(User.username == username).first()
+    task = db.session.query(Task).filter(Task.id == t_id).first()
+
+    if task.user_id != user.id:
+        return RedirectResponse("/admin")
+
+    db.session.delete(task)
+    db.session.commit()
+    db.session.close()
+
+    return RedirectResponse("/admin")
