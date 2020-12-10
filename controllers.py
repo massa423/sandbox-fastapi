@@ -1,6 +1,6 @@
-from typing import Union
+from typing import Union, List, Dict
 
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Form
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
 from starlette.templating import Jinja2Templates, _TemplateResponse
@@ -230,3 +230,57 @@ def delete(
     db.session.close()
 
     return RedirectResponse("/admin")
+
+
+def get(credentials: HTTPBasicCredentials = Depends(security)) -> List:
+    """
+    get
+    """
+    username = auth(credentials)
+
+    user = db.session.query(User).filter(User.username == username).first()
+    task = db.session.query(Task).filter(Task.user_id == user.id).all()
+    db.session.close()
+
+    task = [
+        {
+            "id": t.id,
+            "content": t.content,
+            "deadline": t.deadline.strftime("%Y-%m-d %H:%M:%S"),
+            "published": t.date.strftime("%Y-%m-d %H:%M:%S"),
+            "done": t.done,
+        }
+        for t in task
+    ]
+
+    return task
+
+
+async def insert(
+    request: Request,
+    content: str = Form(...),
+    deadline: str = Form(...),
+    credentials: HTTPBasicCredentials = Depends(security),
+) -> Dict:
+    """
+    insert
+    """
+    username = auth(credentials)
+
+    user = db.session.query(User).filter(User.username == username).first()
+
+    task = Task(user.id, content, datetime.strptime(deadline, "%Y-%m-%d_%H:%M:%S"))
+
+    db.session.add(task)
+    db.session.commit()
+
+    task = db.session.query(Task).filter(Task.user_id == user.id).all()[-1]
+    db.session.close()
+
+    return {
+        "id": task.id,
+        "content": task.content,
+        "deadline": task.deadline.strftime("%Y-%m-%d %H:%M:%S"),
+        "published": task.date.strftime("%Y-%m-%d %H:%M:%S"),
+        "done": task.done,
+    }
