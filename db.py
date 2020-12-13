@@ -1,12 +1,24 @@
+from sqlalchemy import Boolean, Column, Integer, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+
+SQLALCHEMY_DATABASE_URI = "sqlite:///./test.db"
+
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URI, connect_args={"check_same_thread": False}, echo=True
+)
 
 Base = declarative_base()
-RDB_PATH = "sqlite:///db.sqlite3"
-ECHO_LOG = True
 
-engine = create_engine(RDB_PATH, echo=ECHO_LOG)
 
-Session = sessionmaker(bind=engine)
-session = Session()
+class Todo(Base):
+    """
+    Todo
+    """
+
+    __tablename__ = "todos"
+    id = Column("id", Integer, primary_key=True)
+    title = Column("title", String(200))
+    done = Column("done", Boolean, default=False)
+
+
+Base.metadata.create_all(bind=engine)
